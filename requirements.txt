@@ -3,4 +3,6 @@ pandas
 yfinance 
 ta
 matplotlib
+matplotlib.pyplot
+
 
