@@ -4,5 +4,7 @@ yfinance
 ta
 matplotlib
 matplotlib.pyplot
+plotly
+
 
 
