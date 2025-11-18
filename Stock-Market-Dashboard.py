@@ -16,23 +16,33 @@ import matplotlib.pyplot as plt
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="📊 S&P 500 Stock Market Dashboard", layout="wide")
 #st.header("📊 Stock Market Dashboard")
-
+sp500 = pd.read_csv("D:/Py/SP500_SYMBOL_LIST.csv") 
 # --- SIDEBAR INPUT ---
 
-col1, col2, col3, col4   = st.columns(([4,1,1,1]))
+col1, col2, col3, col4, col5   = st.columns(([1.25,0.5,0.5,0.5,0.5]))
  
    
 with col1: 
     st.info("""
-            ### 📊 Stock Market Trend Dashboard
-This dashboard combines **RSI Trend Zones** with **EMA-based price trend**  
-to identify overall market strength and momentum direction.
+            ### 📊 Stock Market Trend Dashboard 
 """)
 
-with col2: pe_Sym = st.text_input("Enter Stock Symbol", "AAPL")
+with col2: 
+    
+
+    sym_list = sorted(sp500["Ticker"].dropna().unique())
+ 
+    selected_sym = st.selectbox("Select Symbol:", sym_list)
+    
+    
 with col3: period = st.selectbox("Select Time Period", ["1y", "1mo", "3mo", "6mo", "2y", "5y"])
 with col4: interval = st.selectbox("Select Interval", ["1d", "1h"])
+with col5: pe_Sym_input = st.text_input("Enter Stock Symbol (optional)") 
+
+
+    
 vsecurity_name = "x" 
+pe_Sym = pe_Sym_input.strip() or selected_sym
 # --- FETCH DATA ---
 try:
     data = yf.download(pe_Sym, period=period, interval=interval, auto_adjust=False)
@@ -62,6 +72,43 @@ except Exception as e:
     st.stop()
 
 vsecurity_name = vsecurity_name
+
+col1, col2 = st.columns(([2.5,4]))
+ 
+   
+with col1: 
+    st.info("""             
+This dashboard combines **RSI Trend Zones** with **EMA-based price trend**  
+to identify overall market strength and momentum direction.
+""")
+
+with col2:
+     
+    col1, col2, col3 = st.columns([1,1,1])
+   
+    col1.markdown(f"""
+    <div style='background:white;padding:5px;border-radius:12px;
+                text-align:center;border:1px solid #444;'>
+        <div style='font-size:16px;color:#aaa;'>Security</div>
+        <div style='font-size:14px;font-weight:700;color:#1F597F;'>{security_name}</div>
+    </div>
+    """, unsafe_allow_html=True)
+    col2.markdown(f"""
+    <div style='background:white;padding:5px;border-radius:12px;
+                text-align:center;border:1px solid #444;'>
+        <div style='font-size:16px;color:#aaa;'>Sector</div>
+        <div style='font-size:14px;font-weight:700;color:#1F597F;'>{sector}</div>
+    </div>
+    """, unsafe_allow_html=True)
+    col3.markdown(f"""
+    <div style='background:white;padding:5px;border-radius:12px;
+                text-align:center;border:1px solid #444;'>
+        <div style='font-size:16px;color:#aaa;'>Industry</div>
+        <div style='font-size:14px;font-weight:700;color:#1F597F;'>{industry}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+     
  # --- CALCULATE INDICATORS ---
 # Ensure 'Close' is a 1D Series
 close_series = data["Close"].squeeze()
@@ -190,6 +237,20 @@ def ema_score(trend):
     return -2
 
 alignment_score = ema_score(trend20) + ema_score(trend50)
+ 
+ 
+#data["alignment_score"] = data.apply(alignment_score, axis=1)
+
+#C_alignment_score= data["alignment_score"].iloc[-1]
+
+#def alignment_score(row):
+#    return ema_score(row["trend20"]) + ema_score(row["trend50"])
+
+#data["alignment_score"] = data.apply(alignment_score, axis=1)
+
+#C_alignment_score = data["alignment_score"].iloc[-1]
+
+
 
 if alignment_score >= 3:
     market_signal = "🚀 Strong Bullish"
@@ -222,10 +283,10 @@ col1.metric("Current Price", f"${price:.2f}", f"{pct_change:.2f}%")
 col2.metric("RSI (14)", f"{rsi_value:.2f}", f"{rsi_change14:.1f} | {latest_zone}")
 col3.metric("EMA (20)", f"{float(latest["EMA_20"]):.1f}", f"{ema_pct_change20:.1f}% | {trend20}")
 col4.metric("EMA (50)", f"{float(latest["EMA_50"]):.1f}", f"{ema_pct_change50:.1f}% | {trend50}") 
-col5.metric("EMA Signal", f"Score: {alignment_score:.0f}", f"{market_signal}")
-col6.metric("RSI Trend + Price Trend Combination", f"{market_signal}", f"{Combined_Signal}")
+col5.metric("EMA Signal", f"Score: {alignment_score:.0f}", f"{alignment_score:.0f} | {market_signal}")
+col6.metric("RSI Trend + Price Trend Combination", f"{market_signal}", f"{alignment_score:.0f} | {Combined_Signal}")
 # --- PRICE CHART ---
-st.success("##### Sector info: "+security_name+", Sector: "+ sector+", Industry: "+industry) 
+
 st.subheader("📉 Price Chart with EMA")
 import matplotlib.dates as mdates
 # --- Create Matplotlib Figure ---
