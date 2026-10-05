@@ -16,7 +16,8 @@ import matplotlib.pyplot as plt
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="📊 S&P 500 Stock Market Dashboard", layout="wide")
 #st.header("📊 Stock Market Dashboard")
-sp500 = pd.read_csv("SP500_SYMBOL_LIST.csv") 
+# sp500 = pd.read_csv("SP500_SYMBOL_LIST.csv") 
+sp500 = pd.read_csv("ind_nifty500list_Pub.csv") 
 # --- SIDEBAR INPUT ---
 
 col1, col2, col3, col4, col5   = st.columns(([1.25,0.5,0.5,0.5,0.5]))
